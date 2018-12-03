@@ -1,4 +1,4 @@
-#include "matriceAK.h"
+#include "polynomes.h"
 
 int max(int a, int b)
 {
