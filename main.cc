@@ -2,7 +2,7 @@
 
 int main()
 {
-  // std::vector<std::vector<double> > AK = createAK(getQ2PolVect());
+  std::vector<std::vector<double> > AK = createAK(getQ1PolVect());
   //
   // std::cout << "AK = 1/90*" << std::endl;
   // for (int i = 0; i < AK.size(); i++)
@@ -26,14 +26,25 @@ int main()
   //   std::cout << std::endl;
   // }
 
-  std::vector<std::vector<double> > B2K = createB2K(getQ1PolVect(),getQ2PolVect());
+  // std::vector<std::vector<double> > B2K = createB2K(getQ1PolVect(),getQ2PolVect());
+  //
+  // std::cout << "B2K = 1/360*" << std::endl;
+  // for (int i = 0; i < B2K.size(); i++)
+  // {
+  //   for (int j = 0; j < B2K[0].size(); j++)
+  //   {
+  //     std::cout << floor(36000*B2K[i][j] + 0.1)/100 << "   ";
+  //   }
+  //   std::cout << std::endl;
+  // }
 
-  std::cout << "B2K = 1/360*" << std::endl;
-  for (int i = 0; i < B2K.size(); i++)
+  std::vector<std::vector<double> > A = createA(AK, 2);
+
+  for (int i = 0; i < A.size(); i++)
   {
-    for (int j = 0; j < B2K[0].size(); j++)
+    for (int j = 0; j < A[0].size(); j++)
     {
-      std::cout << floor(36000*B2K[i][j] + 0.1)/100 << "   ";
+      std::cout << A[i][j] << " ";
     }
     std::cout << std::endl;
   }

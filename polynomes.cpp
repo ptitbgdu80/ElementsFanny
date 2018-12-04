@@ -558,3 +558,57 @@ std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, st
   }
   return result;
 }
+
+std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, int Nx)
+{
+  std::vector<std::vector<double> > MatA;
+  MatA.resize(Nx*Nx);
+  for (int i = 0; i < Nx*Nx; i++)
+  {
+    MatA[i].resize(Nx*Nx);
+  }
+  std::cout <<"Nx*Nx "<<Nx*Nx<<std::endl;
+
+  for (int i = 0; i < Nx*Nx; i++)
+  {
+    MatA[i][i]=Ak[0][0]+Ak[1][1]+Ak[2][2]+Ak[3][3];
+
+    int r = i%Nx;
+    if (r != Nx-1)//dernièrecolonne
+    {
+      MatA[i][i+1]=Ak[0][1]+Ak[2][3];
+
+    }
+    if (r != 0) //première colonne
+    {
+      MatA[i][i-1]=Ak[0][1]+Ak[2][3];
+
+    }
+    if (i < (Nx-1)*Nx)//derniere ligne
+    {
+      MatA[i][i+Nx]=Ak[1][3]+Ak[0][2];
+      if (r != Nx-1)//dernierecolonne
+      {
+        MatA[i][i+Nx+1]=Ak[0][3];
+      }
+      if (r != 0) //première colonne
+      {
+        MatA[i][i+Nx-1]=Ak[1][2];
+      }
+    }
+
+    if(i > Nx-1)//premiere ligne
+    {
+      MatA[i][i-Nx]=Ak[1][3]+Ak[0][2];
+      if (r != Nx-1)//dernierecolonne
+      {
+        MatA[i][i-Nx+1]=Ak[0][3];
+      }
+      if (r != 0) //première colonne
+      {
+        MatA[i][i-Nx-1]=Ak[1][2];
+      }
+    }
+  }
+  return MatA;
+}
