@@ -339,7 +339,7 @@ Polynome2D operator*(Polynome2D pol1, Polynome2D pol2)
 {
   Polynome2D result = createZeroPol();
 
-  if ((pol1.degreX != 0 or pol1.degreY != 0) and (pol2.degreX != 0 or pol2.degreY != 0))
+  if ((pol1.degreX != 0 or pol1.degreY != 0 or pol1.coeffs[0][0] != 0) and (pol2.degreX != 0 or pol2.degreY != 0 or pol2.coeffs[0][0] != 0))
   {
     result.degreX = pol1.degreX + pol2.degreX;
     result.degreY = pol1.degreY + pol2.degreY;

@@ -65,7 +65,7 @@ std::vector<std::vector<double> > createB1K(std::vector<Polynome2D> polVect1, st
     result[i].resize(polVect1.size());
     for (int j = 0; j < polVect1.size(); j++)
     {
-      result[i][j] = - integraleSurUnCarreUnitaire(gradient(polVect2[i])[0]*polVect1[j]);
+      result[i][j] = - integraleSurUnCarreUnitaire(dx(polVect2[i])*polVect1[j]);
     }
   }
   return result;
@@ -80,7 +80,7 @@ std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, st
     result[i].resize(polVect1.size());
     for (int j = 0; j < polVect1.size(); j++)
     {
-      result[i][j] = - integraleSurUnCarreUnitaire(gradient(polVect2[i])[1]*polVect1[j]);
+      result[i][j] = - integraleSurUnCarreUnitaire(dy(polVect2[i])*polVect1[j]);
     }
   }
   return result;
@@ -94,6 +94,13 @@ std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, 
     exit(1);
   }
   int dim = Ak.size();
+
+  if (Ak[0].size() != dim)
+  {
+    std::cout << "La matrice Ak n'est pas carrée" << std::endl;
+    exit(1);
+  }
+
   int Nx;
 
   if (dim == 4) //cas Q1
@@ -147,10 +154,71 @@ std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, 
   return MatA;
 }
 
-// std::vector<std::vector<double> > createB1(std::vector<std::vector<double> > B1k, int Nk)
-// {
-//
-// }
+std::vector<std::vector<double> > createB1(std::vector<std::vector<double> > B1k, int Nk)
+{
+  if (Nk < 1)
+  {
+    std::cout << "Le nombre d'éléments par ligne doit être positif pour créer B1" << std::endl;
+    exit(1);
+  }
+
+  int dim1 = B1k.size();
+  int dim2 = B1k[0].size();
+
+  int Nx1, Nx2;
+
+  if (dim1 == 4 and dim2 == 1) //cas (P0,Q1)
+  {
+    Nx1 = Nk +1;
+    Nx2 = Nk;
+  }
+  else if (dim1 == 9 and dim2 == 4) //cas (Q1,Q2)
+  {
+    Nx1 = 2*Nk + 1;
+    Nx2 = Nk + 1;
+  }
+
+  std::vector<std::vector<double> > MatB1;
+
+  MatB1.resize(Nx1*Nx1);
+  for (int i = 0; i < Nx1*Nx1; i++)
+  {
+    MatB1[i].resize(Nx2*Nx2);
+    for (int j = 0; j < Nx2*Nx2; j++)
+    {
+      MatB1[i][j] = 0;
+    }
+  }
+
+  if (dim1 == 4 and dim2 ==1) //cas (P0,Q1)
+  {
+    for (int elementK = 0; elementK < Nk*Nk; elementK++)
+    {
+      for(int i = 0; i < dim1; i++)
+      {
+        for (int j = 0; j < dim2; j++)
+        {
+          MatB1[localToGlobalQ1(elementK,i+1,Nk)][j] += B1k[i][j];
+        }
+      }
+    }
+  }
+
+  else if (dim1 == 9 and dim2 == 4) //cas Q2
+  {
+    for (int elementK = 0; elementK < Nk*Nk; elementK++)
+    {
+      for(int i = 0; i < dim1; i++)
+      {
+        for (int j = 0; j < dim2; j++)
+        {
+          MatB1[localToGlobalQ2(elementK,i+1,Nk)][localToGlobalQ1(elementK,j+1,Nk)] += B1k[i][j];
+        }
+      }
+    }
+  }
+  return MatB1;
+}
 
 int localToGlobalQ1(int elementK, int numeroSommet, int Nk) //Donne l'indice dans le maillage du sommet numeroSommet appartenant à l'élément elementK, Nk nombre d'éléments par ligne
 {
