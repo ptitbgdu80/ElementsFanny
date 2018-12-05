@@ -111,6 +111,11 @@ std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, 
   {
     Nx = 2*Nk + 1;
   }
+  else
+  {
+    std::cout << "La matrice Ak n'a pas une dimension correspondant à Q1 ou Q2" << std::endl;
+    exit(1);
+  }
 
   std::vector<std::vector<double> > MatA;
 
@@ -154,7 +159,7 @@ std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, 
   return MatA;
 }
 
-std::vector<std::vector<double> > createB1(std::vector<std::vector<double> > B1k, int Nk)
+std::vector<std::vector<double> > createB1ouB2(std::vector<std::vector<double> > Bk, int Nk)
 {
   if (Nk < 1)
   {
@@ -162,8 +167,8 @@ std::vector<std::vector<double> > createB1(std::vector<std::vector<double> > B1k
     exit(1);
   }
 
-  int dim1 = B1k.size();
-  int dim2 = B1k[0].size();
+  int dim1 = Bk.size();
+  int dim2 = Bk[0].size();
 
   int Nx1, Nx2;
 
@@ -176,6 +181,11 @@ std::vector<std::vector<double> > createB1(std::vector<std::vector<double> > B1k
   {
     Nx1 = 2*Nk + 1;
     Nx2 = Nk + 1;
+  }
+  else
+  {
+    std::cout << "La matrice Bk n'a pas une dimension correspondant à (P0,Q1) ou (Q1,Q2)" << std::endl;
+    exit(1);
   }
 
   std::vector<std::vector<double> > MatB1;
@@ -198,7 +208,7 @@ std::vector<std::vector<double> > createB1(std::vector<std::vector<double> > B1k
       {
         for (int j = 0; j < dim2; j++)
         {
-          MatB1[localToGlobalQ1(elementK,i+1,Nk)][j] += B1k[i][j];
+          MatB1[localToGlobalQ1(elementK,i+1,Nk)][j] += Bk[i][j];
         }
       }
     }
@@ -212,7 +222,7 @@ std::vector<std::vector<double> > createB1(std::vector<std::vector<double> > B1k
       {
         for (int j = 0; j < dim2; j++)
         {
-          MatB1[localToGlobalQ2(elementK,i+1,Nk)][localToGlobalQ1(elementK,j+1,Nk)] += B1k[i][j];
+          MatB1[localToGlobalQ2(elementK,i+1,Nk)][localToGlobalQ1(elementK,j+1,Nk)] += Bk[i][j];
         }
       }
     }

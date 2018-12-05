@@ -50,7 +50,7 @@ int main()
   //   std::cout << std::endl;
   // }
 
-  std::vector<std::vector<double> > B1 = createB1(B1K, 1);
+  std::vector<std::vector<double> > B1 = createB1ouB2(B1K, 1);
 
   std::cout << "B1 = 1/360*" << std::endl;
   for (int i = 0; i < B1.size(); i++)
