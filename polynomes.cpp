@@ -559,60 +559,7 @@ std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, st
   return result;
 }
 
-std::vector<std::vector<double> > createAV1(std::vector<std::vector<double> > Ak, int Nx)
-{
-  std::vector<std::vector<double> > MatA;
-  MatA.resize(Nx*Nx);
-  for (int i = 0; i < Nx*Nx; i++)
-  {
-    MatA[i].resize(Nx*Nx);
-  }
-
-  for (int i = 0; i < Nx*Nx; i++)
-  {
-    MatA[i][i]=Ak[0][0]+Ak[1][1]+Ak[2][2]+Ak[3][3];
-
-    int r = i%Nx;
-    if (r != Nx-1)//dernièrecolonne
-    {
-      MatA[i][i+1]=Ak[0][1]+Ak[2][3];
-
-    }
-    if (r != 0) //première colonne
-    {
-      MatA[i][i-1]=Ak[0][1]+Ak[2][3];
-
-    }
-    if (i < (Nx-1)*Nx)//derniere ligne
-    {
-      MatA[i][i+Nx]=Ak[1][3]+Ak[0][2];
-      if (r != Nx-1)//dernierecolonne
-      {
-        MatA[i][i+Nx+1]=Ak[0][3];
-      }
-      if (r != 0) //première colonne
-      {
-        MatA[i][i+Nx-1]=Ak[1][2];
-      }
-    }
-
-    if(i > Nx-1)//premiere ligne
-    {
-      MatA[i][i-Nx]=Ak[1][3]+Ak[0][2];
-      if (r != Nx-1)//dernierecolonne
-      {
-        MatA[i][i-Nx+1]=Ak[0][3];
-      }
-      if (r != 0) //première colonne
-      {
-        MatA[i][i-Nx-1]=Ak[1][2];
-      }
-    }
-  }
-  return MatA;
-}
-
-std::vector<std::vector<double> > createAV2(std::vector<std::vector<double> > Ak, int Nx)
+std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, int Nx)
 {
   std::vector<std::vector<double> > MatA;
   MatA.resize(Nx*Nx);
@@ -625,17 +572,34 @@ std::vector<std::vector<double> > createAV2(std::vector<std::vector<double> > Ak
     }
   }
 
-  for (int elementK = 0; elementK < Nx-1; elementK++)
+  int dim = Ak.size();
+  if (dim == 4)
   {
-    for(int i = 0; i < Ak.size(); i++)
+    for (int elementK = 0; elementK < (Nx-1)*(Nx-1); elementK++)
     {
-      for (int j = 0; j < Ak[0].size(); j++)
+      for(int i = 0; i < dim; i++)
       {
-        MatA[localToGlobalQ1(elementK,i+1,Nx)][localToGlobalQ1(elementK,j+1,Nx)] += Ak[i][j];
+        for (int j = 0; j < dim; j++)
+        {
+          MatA[localToGlobalQ1(elementK,i+1,Nx)][localToGlobalQ1(elementK,j+1,Nx)] += Ak[i][j];
+        }
       }
     }
   }
 
+  if (dim == 9)
+  {
+    for (int elementK = 0; elementK < (Nx-1)*(Nx-1)/4; elementK++)
+    {
+      for(int i = 0; i < dim; i++)
+      {
+        for (int j = 0; j < dim; j++)
+        {
+          MatA[localToGlobalQ2(elementK,i+1,Nx)][localToGlobalQ2(elementK,j+1,Nx)] += Ak[i][j];
+        }
+      }
+    }
+  }
   return MatA;
 }
 
@@ -658,4 +622,25 @@ int localToGlobalQ1(int elementK, int numeroSommet, int Nx) //Donne l'indice dan
   int C = elementK%(Nx-1); //numéro de la colonne de l'élément K
 
   return L*Nx + C + (numeroSommet - 1)/2*Nx + (numeroSommet-1)%2;
+}
+
+int localToGlobalQ2(int elementK, int numeroSommet, int Nx) //Donne l'indice dans le maillage du sommet numeroSommet appartenant à l'élément elementK
+{
+  if (elementK < 0 or elementK > Nx*Nx-1)
+  {
+    std::cout << "L'élément " << elementK << " n'appartient pas au domaine" << std::endl;
+    std::cout << "Il doit être compris entre 0 et " << Nx*Nx-1 << std::endl;
+    exit(1);
+  }
+
+  if (numeroSommet < 1 or numeroSommet > 9)
+  {
+    std::cout << "Le numéro du sommet doit être compris entre 1 et 9, numeroSommet = " << numeroSommet << std::endl;
+    exit(1);
+  }
+
+  int L = elementK/((Nx-1)/2); //numéro de ligne de l'élément K
+  int C = elementK%((Nx-1)/2); //numéro de la colonne de l'élément K
+
+  return 2*L*Nx + 2*C + (numeroSommet - 1)/3*Nx + (numeroSommet-1)%3;
 }
