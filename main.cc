@@ -38,13 +38,24 @@ int main()
   //   std::cout << std::endl;
   // }
 
-  std::vector<std::vector<double> > A = createA(AK, 2);
+  std::vector<std::vector<double> > AV2 = createAV2(AK, 2);
 
-  for (int i = 0; i < A.size(); i++)
+  for (int i = 0; i < AV2.size(); i++)
   {
-    for (int j = 0; j < A[0].size(); j++)
+    for (int j = 0; j < AV2[0].size(); j++)
     {
-      std::cout << A[i][j] << " ";
+      std::cout << AV2[i][j] << " ";
+    }
+    std::cout << std::endl;
+  }
+
+  std::vector<std::vector<double> > AV1 = createAV1(AK, 2);
+
+  for (int i = 0; i < AV1.size(); i++)
+  {
+    for (int j = 0; j < AV1[0].size(); j++)
+    {
+      std::cout << AV1[i][j] << " ";
     }
     std::cout << std::endl;
   }

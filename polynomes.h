@@ -65,4 +65,8 @@ std::vector<std::vector<double> > createB1K(std::vector<Polynome2D> polVect1, st
 
 std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2);
 
-std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, int Nx);
+std::vector<std::vector<double> > createAV1(std::vector<std::vector<double> > Ak, int Nx);
+
+std::vector<std::vector<double> > createAV2(std::vector<std::vector<double> > Ak, int Nx);
+
+int localToGlobalQ1(int elementK, int numeroSommet, int Nx);
