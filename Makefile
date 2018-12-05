@@ -8,7 +8,7 @@ FLAGS =-std=c++11
 PROG = run
 
 # Les fichiers source à compiler
-SRC = main.cc polynomes.cpp
+SRC = main.cc polynomes.cpp matricesEF.cpp
 
 # La commande complète : compile seulement si un fichier a été modifié
 $(PROG) : $(SRC)

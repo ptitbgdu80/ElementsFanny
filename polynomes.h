@@ -51,22 +51,8 @@ Polynome2D operator*(double lambda, Polynome2D pol);
 
 Polynome2D operator*(Polynome2D pol, double lambda);
 
+Polynome2D pow(Polynome2D pol, int exposant);
+
 std::ostream &operator<<(std::ostream &out, Polynome2D pol);
 
 std::ostream &operator<<(std::ostream &out, std::vector<Polynome2D> vect);
-
-std::vector<Polynome2D> getQ1PolVect();
-
-std::vector<Polynome2D> getQ2PolVect();
-
-std::vector<std::vector<double> > createAK(std::vector<Polynome2D> polVect);
-
-std::vector<std::vector<double> > createB1K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2);
-
-std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2);
-
-std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, int Nx);
-
-int localToGlobalQ1(int elementK, int numeroSommet, int Nx);
-
-int localToGlobalQ2(int elementK, int numeroSommet, int Nx);

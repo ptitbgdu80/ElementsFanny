@@ -1,4 +1,4 @@
-#include "polynomes.h"
+#include "matricesEF.h"
 
 int main()
 {
@@ -38,7 +38,7 @@ int main()
   //   std::cout << std::endl;
   // }
 
-  std::vector<std::vector<double> > A = createA(AK, 5);
+  std::vector<std::vector<double> > A = createA(AK, 2);
 
   std::cout << "A = 1/90*" << std::endl;
   for (int i = 0; i < A.size(); i++)
