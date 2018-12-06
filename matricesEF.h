@@ -3,6 +3,7 @@
 #include <iostream>
 #include <ostream>
 #include <math.h>
+#include "Sparse"
 
 std::vector<Polynome2D> getP0PolVect();
 
@@ -16,9 +17,11 @@ std::vector<std::vector<double> > createB1K(std::vector<Polynome2D> polVect1, st
 
 std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2);
 
-std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, int Nk);
+void insertA(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
 
-std::vector<std::vector<double> > createB1ouB2(std::vector<std::vector<double> > Bk, int Nk);
+void insertB1B2(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M);
+
+Eigen::SparseMatrix<double> createM(int choix, int Nk);
 
 int localToGlobalQ1(int elementK, int numeroSommet, int Nk);
 

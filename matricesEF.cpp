@@ -86,7 +86,7 @@ std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, st
   return result;
 }
 
-std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, int Nk) //Nk nombre d'éléments (ou de mailles) par ligne
+void insertA(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M) //Nk nombre d'éléments (ou de mailles) par ligne
 {
   if (Nk < 1)
   {
@@ -117,18 +117,6 @@ std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, 
     exit(1);
   }
 
-  std::vector<std::vector<double> > MatA;
-
-  MatA.resize(Nx*Nx);
-  for (int i = 0; i < Nx*Nx; i++)
-  {
-    MatA[i].resize(Nx*Nx);
-    for (int j = 0; j < Nx*Nx; j++)
-    {
-      MatA[i][j] = 0;
-    }
-  }
-
   if (dim == 4) //cas Q1
   {
     for (int elementK = 0; elementK < Nk*Nk; elementK++)
@@ -137,13 +125,14 @@ std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, 
       {
         for (int j = 0; j < dim; j++)
         {
-          MatA[localToGlobalQ1(elementK,i+1,Nk)][localToGlobalQ1(elementK,j+1,Nk)] += Ak[i][j];
+          M.coeffRef(localToGlobalQ1(elementK,i+1,Nk),localToGlobalQ1(elementK,j+1,Nk))+=Ak[i][j];
+          M.coeffRef(localToGlobalQ1(elementK,i+1,Nk)+Nx*Nx,localToGlobalQ1(elementK,j+1,Nk)+Nx*Nx)+=Ak[i][j];
         }
       }
     }
   }
 
-  else if (dim == 9) //cas Q2
+  else if (dim == 9) //cas (Q1,Q2)
   {
     for (int elementK = 0; elementK < Nk*Nk; elementK++)
     {
@@ -151,15 +140,15 @@ std::vector<std::vector<double> > createA(std::vector<std::vector<double> > Ak, 
       {
         for (int j = 0; j < dim; j++)
         {
-          MatA[localToGlobalQ2(elementK,i+1,Nk)][localToGlobalQ2(elementK,j+1,Nk)] += Ak[i][j];
+          M.coeffRef(localToGlobalQ2(elementK,i+1,Nk),localToGlobalQ2(elementK,j+1,Nk))+=Ak[i][j];
+          M.coeffRef(localToGlobalQ2(elementK,i+1,Nk)+Nx*Nx,localToGlobalQ2(elementK,j+1,Nk)+Nx*Nx)+=Ak[i][j];
         }
       }
     }
   }
-  return MatA;
 }
 
-std::vector<std::vector<double> > createB1ouB2(std::vector<std::vector<double> > Bk, int Nk)
+void insertB1B2(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M)
 {
   if (Nk < 1)
   {
@@ -167,8 +156,14 @@ std::vector<std::vector<double> > createB1ouB2(std::vector<std::vector<double> >
     exit(1);
   }
 
-  int dim1 = Bk.size();
-  int dim2 = Bk[0].size();
+  int dim1 = B1k.size();
+  int dim2 = B1k[0].size();
+
+  if (B2k.size() != dim1 or B2k[0].size() != dim2)
+  {
+    std::cout << "Les matrices B1k et B2k n'ont pas les mêmes dimensions" << std::endl;
+    exit(1);
+  }
 
   int Nx1, Nx2;
 
@@ -188,17 +183,6 @@ std::vector<std::vector<double> > createB1ouB2(std::vector<std::vector<double> >
     exit(1);
   }
 
-  std::vector<std::vector<double> > MatB1;
-
-  MatB1.resize(Nx1*Nx1);
-  for (int i = 0; i < Nx1*Nx1; i++)
-  {
-    MatB1[i].resize(Nx2*Nx2);
-    for (int j = 0; j < Nx2*Nx2; j++)
-    {
-      MatB1[i][j] = 0;
-    }
-  }
 
   if (dim1 == 4 and dim2 ==1) //cas (P0,Q1)
   {
@@ -208,7 +192,10 @@ std::vector<std::vector<double> > createB1ouB2(std::vector<std::vector<double> >
       {
         for (int j = 0; j < dim2; j++)
         {
-          MatB1[localToGlobalQ1(elementK,i+1,Nk)][j] += Bk[i][j];
+          M.coeffRef(localToGlobalQ1(elementK,i+1,Nk),elementK+2*Nx1*Nx1) += B1k[i][j];
+          M.coeffRef(elementK+2*Nx1*Nx1,localToGlobalQ1(elementK,i+1,Nk)) += B1k[i][j];
+          M.coeffRef(localToGlobalQ1(elementK,i+1,Nk)+Nx1*Nx1,elementK+2*Nx1*Nx1) += B2k[i][j];
+          M.coeffRef(elementK+2*Nx1*Nx1,localToGlobalQ1(elementK,i+1,Nk)+Nx1*Nx1) += B2k[i][j];
         }
       }
     }
@@ -222,12 +209,48 @@ std::vector<std::vector<double> > createB1ouB2(std::vector<std::vector<double> >
       {
         for (int j = 0; j < dim2; j++)
         {
-          MatB1[localToGlobalQ2(elementK,i+1,Nk)][localToGlobalQ1(elementK,j+1,Nk)] += Bk[i][j];
+          M.coeffRef(localToGlobalQ2(elementK,i+1,Nk),localToGlobalQ1(elementK,j+1,Nk)+2*Nx1*Nx1) += B1k[i][j];
+          M.coeffRef(localToGlobalQ1(elementK,j+1,Nk)+2*Nx1*Nx1,localToGlobalQ2(elementK,i+1,Nk)) += B1k[i][j];
+          M.coeffRef(localToGlobalQ2(elementK,i+1,Nk)+Nx1*Nx1,localToGlobalQ1(elementK,j+1,Nk)+2*Nx1*Nx1) += B2k[i][j];
+          M.coeffRef(localToGlobalQ1(elementK,j+1,Nk)+2*Nx1*Nx1,localToGlobalQ2(elementK,i+1,Nk)+Nx1*Nx1) += B2k[i][j];
         }
       }
     }
   }
-  return MatB1;
+}
+
+Eigen::SparseMatrix<double> createM(int choix, int Nk)
+{
+  int Nx1,Nx2;
+  std::vector<std::vector<double> > AK, B1K, B2K;
+  Eigen::SparseMatrix<double> M;
+
+  switch (choix) {
+    case 1:
+    AK = createAK(getQ1PolVect());
+    B1K = createB1K(getP0PolVect(),getQ1PolVect());
+    B2K = createB2K(getP0PolVect(),getQ1PolVect());
+    Nx1=Nk+1;
+    Nx2=Nk;
+    break;
+    case 2:
+    AK = createAK(getQ2PolVect());
+    B1K = createB1K(getQ1PolVect(),getQ2PolVect());
+    B2K = createB2K(getQ1PolVect(),getQ2PolVect());
+    Nx1=2*Nk+1;
+    Nx2=Nk+1;
+    break;
+    default:
+    std::cout<<"Le choix doit être 1 ou 2"<<std::endl;
+    exit(1);
+  }
+
+  M.resize(2*(Nx1*Nx1)+Nx2*Nx2,2*(Nx1*Nx1)+Nx2*Nx2);
+
+  insertA (AK, Nk, M);
+  insertB1B2(B1K,B2K,Nk,M);
+  
+  return M;
 }
 
 int localToGlobalQ1(int elementK, int numeroSommet, int Nk) //Donne l'indice dans le maillage du sommet numeroSommet appartenant à l'élément elementK, Nk nombre d'éléments par ligne
