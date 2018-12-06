@@ -249,7 +249,185 @@ Eigen::SparseMatrix<double> createM(int choix, int Nk)
 
   insertA (AK, Nk, M);
   insertB1B2(B1K,B2K,Nk,M);
-  
+
+  return M;
+}
+
+void insertAavecCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M) //Nk nombre d'éléments (ou de mailles) par ligne
+{
+  if (Nk < 1)
+  {
+    std::cout << "Le nombre d'éléments par ligne doit être positif pour créer A" << std::endl;
+    exit(1);
+  }
+  int dim = Ak.size();
+
+  if (Ak[0].size() != dim)
+  {
+    std::cout << "La matrice Ak n'est pas carrée" << std::endl;
+    exit(1);
+  }
+
+  int Nx;
+
+  if (dim == 4) //cas (P0,Q1)
+  {
+    Nx = Nk +1;
+  }
+  else if (dim == 9) //cas (Q1,Q2)
+  {
+    Nx = 2*Nk + 1;
+  }
+  else
+  {
+    std::cout << "La matrice Ak n'a pas une dimension correspondant à Q1 ou Q2" << std::endl;
+    exit(1);
+  }
+
+  for (int elementK = 0; elementK < Nk*Nk; elementK++)
+  {
+    for(int i = 0; i < dim; i++)
+    {
+      int iA;
+      if (dim == 4) //cas (P0,Q1)
+      {
+        iA = localToGlobalQ1(elementK,i+1,Nk);
+      }
+      else if (dim == 9) //cas (Q1,Q2)
+      {
+        iA = localToGlobalQ2(elementK,i+1,Nk);
+      }
+
+      if (iA < Nx or iA%Nx == 0 or iA%Nx == Nx-1 or iA > Nx*(Nx-1) - 1) //On est sur un bord, il faut imposer la valeur de la vitesse
+      {
+        M.coeffRef(iA,iA) = 1;
+        M.coeffRef(iA+Nx*Nx,iA+Nx*Nx) = 1;
+      }
+      else
+      {
+        for (int j = 0; j < dim; j++)
+        {
+          int jA;
+          if (dim == 4) //cas (P0,Q1)
+          {
+            jA = localToGlobalQ1(elementK,j+1,Nk);
+          }
+          else if (dim == 9) //cas (Q1,Q2)
+          {
+            jA = localToGlobalQ2(elementK,j+1,Nk);
+          }
+          M.coeffRef(iA,jA)+=Ak[i][j];
+          M.coeffRef(iA+Nx*Nx,jA+Nx*Nx)+=Ak[i][j];
+        }
+      }
+    }
+  }
+}
+
+void insertB1B2avecCL(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M)
+{
+  if (Nk < 1)
+  {
+    std::cout << "Le nombre d'éléments par ligne doit être positif pour créer B1" << std::endl;
+    exit(1);
+  }
+
+  int dim1 = B1k.size();
+  int dim2 = B1k[0].size();
+
+  if (B2k.size() != dim1 or B2k[0].size() != dim2)
+  {
+    std::cout << "Les matrices B1k et B2k n'ont pas les mêmes dimensions" << std::endl;
+    exit(1);
+  }
+
+  int Nx1, Nx2;
+
+  if (dim1 == 4 and dim2 == 1) //cas (P0,Q1)
+  {
+    Nx1 = Nk +1;
+    Nx2 = Nk;
+  }
+  else if (dim1 == 9 and dim2 == 4) //cas (Q1,Q2)
+  {
+    Nx1 = 2*Nk + 1;
+    Nx2 = Nk + 1;
+  }
+  else
+  {
+    std::cout << "La matrice Bk n'a pas une dimension correspondant à (P0,Q1) ou (Q1,Q2)" << std::endl;
+    exit(1);
+  }
+
+  for (int elementK = 0; elementK < Nk*Nk; elementK++)
+  {
+    for(int i = 0; i < dim1; i++)
+    {
+      for (int j = 0; j < dim2; j++)
+      {
+        int iB,jB;
+        if (dim1 == 4 and dim2 == 1) //cas (P0,Q1)
+        {
+          iB = localToGlobalQ1(elementK,i+1,Nk);
+          jB = elementK;
+        }
+        else if (dim1 == 9 and dim2 == 4) //cas (Q1,Q2)
+        {
+          iB = localToGlobalQ2(elementK,i+1,Nk);
+          jB = localToGlobalQ1(elementK,j+1,Nk);
+        }
+
+        if (iB >= Nx1 and iB%Nx1 != 0 and iB%Nx1 != Nx1-1 and iB < Nx1*(Nx1-1))
+        {
+          M.coeffRef(iB,jB+2*Nx1*Nx1) += B1k[i][j];
+          M.coeffRef(iB+Nx1*Nx1,jB+2*Nx1*Nx1) += B2k[i][j];
+        }
+
+        if (jB >= Nx2 and jB%Nx2 != 0 and jB%Nx2 != Nx2-1 and jB < Nx2*(Nx2-1)) //remplissage des B^T
+        {
+          M.coeffRef(jB+2*Nx1*Nx1,iB) += B1k[i][j];
+          M.coeffRef(jB+2*Nx1*Nx1,iB+Nx1*Nx1) += B2k[i][j];
+        }
+        else
+        {
+          M.coeffRef(jB+2*Nx1*Nx1,jB+2*Nx1*Nx1) = 1;
+        }
+      }
+    }
+  }
+}
+
+Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk)
+{
+  int Nx1,Nx2;
+  std::vector<std::vector<double> > AK, B1K, B2K;
+  Eigen::SparseMatrix<double> M;
+
+  switch (choix) {
+    case 1:
+    AK = createAK(getQ1PolVect());
+    B1K = createB1K(getP0PolVect(),getQ1PolVect());
+    B2K = createB2K(getP0PolVect(),getQ1PolVect());
+    Nx1=Nk+1;
+    Nx2=Nk;
+    break;
+    case 2:
+    AK = createAK(getQ2PolVect());
+    B1K = createB1K(getQ1PolVect(),getQ2PolVect());
+    B2K = createB2K(getQ1PolVect(),getQ2PolVect());
+    Nx1=2*Nk+1;
+    Nx2=Nk+1;
+    break;
+    default:
+    std::cout<<"Le choix doit être 1 ou 2"<<std::endl;
+    exit(1);
+  }
+
+  M.resize(2*(Nx1*Nx1)+Nx2*Nx2,2*(Nx1*Nx1)+Nx2*Nx2);
+
+  insertAavecCL(AK, Nk, M);
+  insertB1B2avecCL(B1K,B2K,Nk,M);
+
   return M;
 }
 

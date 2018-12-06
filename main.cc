@@ -2,8 +2,8 @@
 
 int main()
 {
-  Eigen::SparseMatrix<double> M = createM(2,2);
+  Eigen::SparseMatrix<double> M = createMavecCL(2,1);
 
-  std::cout <<M<<std::endl;
+  std::cout << M << std::endl;
 
 }

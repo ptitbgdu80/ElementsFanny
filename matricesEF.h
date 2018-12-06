@@ -23,6 +23,12 @@ void insertB1B2(std::vector<std::vector<double> > B1k, std::vector<std::vector<d
 
 Eigen::SparseMatrix<double> createM(int choix, int Nk);
 
+void insertAavecCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
+
+void insertB1B2avecCL(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M);
+
+Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk);
+
 int localToGlobalQ1(int elementK, int numeroSommet, int Nk);
 
 int localToGlobalQ2(int elementK, int numeroSommet, int Nk);
