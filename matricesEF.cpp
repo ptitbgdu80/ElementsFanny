@@ -86,6 +86,74 @@ std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, st
   return result;
 }
 
+std::vector<double> createFK(std::vector<Polynome2D> polVect)
+{
+  std::vector<double> result;
+  result.resize(polVect.size());
+  for (int i = 0; i < polVect.size(); i++)
+  {
+        result[i]= integraleSurUnCarreUnitaire(polVect[i]);
+
+  }
+  return result;
+}
+
+std::vector<double> createF(std::vector<double> Fk, int Nk) //Nk nombre d'éléments (ou de mailles) par ligne
+{
+  std::vector<double> F;
+  if (Nk < 1)
+  {
+    std::cout << "Le nombre d'éléments par ligne doit être positif pour créer F" << std::endl;
+    exit(1);
+  }
+  int dim = Fk.size();
+
+  // if (Ak[0].size() != dim)
+  // {
+  //   std::cout << "La matrice Ak n'est pas carrée" << std::endl;
+  //   exit(1);
+  // }
+
+  int Nx;
+
+  if (dim == 4) //cas Q1
+  {
+    Nx = Nk +1;
+  }
+  else if (dim == 9) //cas Q2
+  {
+    Nx = 2*Nk + 1;
+  }
+  else
+  {
+    std::cout << "La matrice Fk n'a pas une dimension correspondant à Q1 ou Q2" << std::endl;
+    exit(1);
+  }
+
+  if (dim == 4) //cas Q1
+  {
+    for (int elementK = 0; elementK < Nk*Nk; elementK++)
+    {
+      for(int i = 0; i < dim; i++)
+      {
+        F[localToGlobalQ1(elementK,i+1,Nk)]+=Fk[i];
+      }
+    }
+  }
+
+  else if (dim == 9) //cas (Q1,Q2)
+  {
+    for (int elementK = 0; elementK < Nk*Nk; elementK++)
+    {
+      for(int i = 0; i < dim; i++)
+      {
+        F[localToGlobalQ2(elementK,i+1,Nk)]+=Fk[i];
+      }
+    }
+  }
+  return F;
+}
+
 void insertA(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M) //Nk nombre d'éléments (ou de mailles) par ligne
 {
   if (Nk < 1)

@@ -17,6 +17,10 @@ std::vector<std::vector<double> > createB1K(std::vector<Polynome2D> polVect1, st
 
 std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2);
 
+std::vector<double> createFK(std::vector<Polynome2D> polVect);
+
+std::vector<double> createF(std::vector<double> Fk, int Nk);
+
 void insertA(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
 
 void insertB1B2(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M);
