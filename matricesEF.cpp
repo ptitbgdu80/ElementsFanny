@@ -154,6 +154,38 @@ std::vector<double> createF(std::vector<double> Fk, int Nk) //Nk nombre d'élém
   return F;
 }
 
+double fonctionCL (double x, double y)
+{
+  return x+y;
+}
+std::vector<double> FavecCL(std::vector<double> Fk, int Nk)
+{
+
+  double x,y, dx,dy;
+  dx=0.1;
+  dy=0.1;
+  int Nx1;
+  int Nx2;
+
+  for (int i=0; i<Nk; i++)//premiere ligne
+  {
+    x=i*dx;
+    y=i*dy;
+    Fk[i]=fonctionCL(x,y);
+  }
+
+  for (int i=Nx*(Nx-1); i<Nx*Nx)//derniere ligne
+  {
+    x=i*dx;
+    y=i*dy;
+    Fk[i]=fonctionCL(x,y);
+  }
+
+  //premiere colonne à faire
+  //derniere colonne à faire
+
+}
+
 void insertA(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M) //Nk nombre d'éléments (ou de mailles) par ligne
 {
   if (Nk < 1)
