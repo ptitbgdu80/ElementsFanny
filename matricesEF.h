@@ -4,6 +4,7 @@
 #include <ostream>
 #include <math.h>
 #include "Sparse"
+#include "Dense"
 
 std::vector<Polynome2D> getP0PolVect();
 
@@ -19,13 +20,19 @@ std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, st
 
 std::vector<double> createFK(std::vector<Polynome2D> polVect);
 
-std::vector<double> createF(std::vector<double> Fk, int Nk);
+void insertSource(int Nk, Eigen::VectorXd &F);
 
-void insertA(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
+std::vector<double> CLvitesse (double x, double y);
 
-void insertB1B2(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M);
+double CLpression (double x, double y);
 
-Eigen::SparseMatrix<double> createM(int choix, int Nk);
+Eigen::VectorXd createFpourMavecCL(int choix, int Nk);
+
+void insertAsansCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
+
+void insertB1B2sansCL(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M);
+
+Eigen::SparseMatrix<double> createMsansCL(int choix, int Nk);
 
 void insertAavecCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
 
