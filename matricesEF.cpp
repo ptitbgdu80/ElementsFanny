@@ -136,12 +136,12 @@ void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F) //Nk nombr
 
 std::vector<double> CLvitesse (double x, double y)
 {
-  return {x,-2*y};
+  return {2,0};
 }
 
 double CLpression (double x, double y)
 {
-  return x+y+1;
+  return 1;
 }
 
 Eigen::VectorXd createFpourMavecCL(int choix, int Nk)
@@ -702,42 +702,48 @@ int localToGlobalQ2(int elementK, int numeroSommet, int Nk) //Donne l'indice dan
   return 2*L*Nx + 2*C + (numeroSommet - 1)/3*Nx + (numeroSommet-1)%3;
 }
 
-// void createVTK(string fichier, int choix, int Nk, Eigen::VectorXd U)
-// {
-//   int Nx1, Nx2;
-//
-//   switch (choix)
-//   {
-//     case 1:
-//     Nx1 = Nk+1;
-//     Nx2 = Nk;
-//     break;
-//
-//     case 2:
-//     Nx1 = 2*Nk+1;
-//     Nx2 = Nk+1;
-//     break;
-// 
-//     default:
-//     std::cout << "Le choix ne correspond ni au cas (P0,Q1), ni au cas (Q1,Q2)" << std::endl;
-//     exit(1);
-//   }
-//
-//   std::ofstream mon_fluxP;
-//   mon_fluxP.open(fichier_P + ".vtk", std::ios::out);
-//   mon_fluxP << "# vtk DataFile Version 3.0\n"
-//   <<"cell\n"
-//   <<"ASCII\n"
-//   <<"DATASET STRUCTURED_POINTS\n"
-//   <<"DIMENSIONS " << Nx2 << " " << Nx2 << " 1\n"
-//   <<"ORIGIN 0 0 0\n"
-//   <<"SPACING  " << 1 << " " << 1 <<  "1.0\n"
-//   <<"POINT_DATA " << Nx2*Nx2 << "\n"
-//   <<"SCALARS cell float\n"
-//   <<"LOOKUP_TABLE default";
-//
-//   for (int i = 0; i < Nx2; i++)
-//   {
-//
-//   }
-// }
+void createVTK(std::string fichier, int choix, int Nk, Eigen::VectorXd U)
+{
+  int Nx1, Nx2;
+
+  switch (choix)
+  {
+    case 1:
+    Nx1 = Nk+1;
+    Nx2 = Nk;
+    break;
+
+    case 2:
+    Nx1 = 2*Nk+1;
+    Nx2 = Nk+1;
+    break;
+
+    default:
+    std::cout << "Le choix ne correspond ni au cas (P0,Q1), ni au cas (Q1,Q2)" << std::endl;
+    exit(1);
+  }
+
+  std::ofstream mon_fluxP;
+  mon_fluxP.open(fichier + "_p.vtk", std::ios::out);
+  mon_fluxP << "# vtk DataFile Version 3.0\n"
+  <<"cell\n"
+  <<"ASCII\n"
+  <<"DATASET STRUCTURED_POINTS\n"
+  <<"DIMENSIONS " << Nx2 << " " << Nx2 << " 1\n"
+  <<"ORIGIN 0 0 0\n"
+  <<"SPACING  1.0 1.0 1.0\n"
+  <<"POINT_DATA " << Nx2*Nx2 << "\n"
+  <<"SCALARS cell float\n"
+  <<"LOOKUP_TABLE default" << std::endl;
+
+  for (int i = 0; i < Nx2; i++)
+  {
+    for (int j = 0; j < Nx2; j++)
+    {
+      mon_fluxP << U[2*Nx1*Nx1 + i + j*Nx2] << " ";
+    }
+    mon_fluxP << std::endl;
+  }
+
+  mon_fluxP.close();
+}

@@ -2,9 +2,16 @@
 
 int main()
 {
-  Eigen::SparseMatrix<double> M = createMavecCL(2,2);
+  int choix = 2;
+  int Nk = 20;
 
-  Eigen::VectorXd F = createFpourMavecCL(2, 2);
+  Eigen::SparseMatrix<double> M = createMsansCL(choix, Nk);
+
+  Eigen::VectorXd F = createFpourMavecCL(choix, Nk);
+
+  std::vector<double> Fk=createFK(getQ2PolVect());
+
+  insertSource(Fk,Nk,F);
 
   Eigen::ConjugateGradient<Eigen::SparseMatrix<double> > solver;
 
@@ -12,5 +19,5 @@ int main()
 
   Eigen::VectorXd U = solver.solve(F);
 
-  std::cout << U << std::endl;
+  createVTK("resultat", choix, Nk, U);
 }

@@ -2,7 +2,9 @@
 #include <vector>
 #include <iostream>
 #include <ostream>
+#include <fstream>
 #include <math.h>
+#include <string>
 #include "Sparse"
 #include "Dense"
 
@@ -20,7 +22,7 @@ std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, st
 
 std::vector<double> createFK(std::vector<Polynome2D> polVect);
 
-void insertSource(int Nk, Eigen::VectorXd &F);
+void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F);
 
 std::vector<double> CLvitesse (double x, double y);
 
@@ -43,3 +45,5 @@ Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk);
 int localToGlobalQ1(int elementK, int numeroSommet, int Nk);
 
 int localToGlobalQ2(int elementK, int numeroSommet, int Nk);
+
+void createVTK(std::string fichier, int choix, int Nk, Eigen::VectorXd U);
