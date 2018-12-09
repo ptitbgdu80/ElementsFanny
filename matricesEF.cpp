@@ -110,6 +110,7 @@ void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F) //Nk nombr
   if (dim == 4) //cas (P0,Q1)
   {
     int Nx1 = Nk +1;
+    int Nx2 = Nk;
     for (int elementK = 0; elementK < Nk*Nk; elementK++)
     {
       for(int i = 0; i < dim; i++)
@@ -123,6 +124,7 @@ void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F) //Nk nombr
   else if (dim == 9) //cas (Q1,Q2)
   {
     int Nx1 = 2*Nk+1;
+    int Nx2 = Nk +1;
     for (int elementK = 0; elementK < Nk*Nk; elementK++)
     {
       for(int i = 0; i < dim; i++)
@@ -136,12 +138,63 @@ void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F) //Nk nombr
 
 std::vector<double> CLvitesse (double x, double y)
 {
-  return {2,0};
+  return {0,0};
 }
 
 double CLpression (double x, double y)
 {
   return 1;
+}
+
+Eigen::VectorXd createFbasique(int choix, int Nk)
+{
+  double dx1, dx2;
+  int Nx1;
+  int Nx2;
+
+  std::vector<double> Fk;
+  Eigen::VectorXd F;
+
+  switch (choix)
+  {
+    case 1: //cas (P0,Q1)
+    Nx1 = Nk +1;
+    Nx2 = Nk;
+    dx1 = 1./Nk;
+    dx2 = 1./Nk;
+
+    Fk = createFK(getQ1PolVect());
+    F.resize(2*Nx1*Nx1+Nx2*Nx2);
+    for (int i = 0; i < 2*Nx1*Nx1+Nx2*Nx2; i++)
+    {
+      F[i] = 0.;
+    }
+
+    insertSource(Fk, Nk, F);
+    break;
+
+    case 2: //cas (Q1,Q2)
+    Nx1 = 2*Nk + 1;
+    Nx2 = Nk + 1;
+    dx1 = 1./(2*Nk);
+    dx2 = 1./Nk;
+
+    Fk = createFK(getQ2PolVect());
+    F.resize(2*Nx1*Nx1+Nx2*Nx2);
+    for (int i = 0; i < 2*Nx1*Nx1+Nx2*Nx2; i++)
+    {
+      F[i] = 0.;
+    }
+
+    insertSource(Fk, Nk, F);
+    break;
+
+    default:
+    std::cout << "Le choix ne correspond ni au cas (P0,Q1), ni au cas (Q1,Q2)" << std::endl;
+    exit(1);
+  }
+
+  return F;
 }
 
 Eigen::VectorXd createFpourMavecCL(int choix, int Nk)
@@ -163,6 +216,11 @@ Eigen::VectorXd createFpourMavecCL(int choix, int Nk)
 
     Fk = createFK(getQ1PolVect());
     F.resize(2*Nx1*Nx1+Nx2*Nx2);
+    for (int i = 0; i < 2*Nx1*Nx1+Nx2*Nx2; i++)
+    {
+      F[i] = 0.;
+    }
+
     insertSource(Fk, Nk, F);
 
     for (int i=0; i<Nx1; i++) //vitesses de bord
@@ -216,6 +274,12 @@ Eigen::VectorXd createFpourMavecCL(int choix, int Nk)
 
     Fk = createFK(getQ2PolVect());
     F.resize(2*Nx1*Nx1+Nx2*Nx2);
+
+    for (int i = 0; i < 2*Nx1*Nx1+Nx2*Nx2; i++)
+    {
+      F[i] = 0.;
+    }
+
     insertSource(Fk, Nk, F);
 
     for (int i=0; i<Nx1; i++) //vitesses de bord
@@ -740,10 +804,30 @@ void createVTK(std::string fichier, int choix, int Nk, Eigen::VectorXd U)
   {
     for (int j = 0; j < Nx2; j++)
     {
-      mon_fluxP << U[2*Nx1*Nx1 + i + j*Nx2] << " ";
+      mon_fluxP << U[2*Nx1*Nx1 + j + i*Nx2] << " ";
     }
     mon_fluxP << std::endl;
   }
 
   mon_fluxP.close();
+
+  std::ofstream mon_fluxU;
+  mon_fluxU.open(fichier + "_u.vtk", std::ios::out);
+  mon_fluxU << "# vtk DataFile Version 3.0\n"
+  <<"cell\n"
+  <<"ASCII\n"
+  <<"DATASET STRUCTURED_POINTS\n"
+  <<"DIMENSIONS " << Nx1 << " " << Nx1 << " 1\n"
+  <<"ORIGIN 0 0 0\n"
+  <<"SPACING  1.0 1.0 1.0\n"
+  <<"POINT_DATA " << Nx1*Nx1 << "\n"
+  <<"Vectors cell float\n"
+  <<"LOOKUP_TABLE default" << std::endl;
+
+  for (int i = 0; i < Nx1*Nx1; i++)
+  {
+      mon_fluxU << U[i] << " " << U[i + Nx1*Nx1] << std::endl;
+  }
+
+  mon_fluxU.close();
 }

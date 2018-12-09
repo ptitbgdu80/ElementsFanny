@@ -2,18 +2,18 @@
 
 int main()
 {
-  int choix = 2;
+  int choix = 1;
   int Nk = 20;
 
-  Eigen::SparseMatrix<double> M = createMsansCL(choix, Nk);
+  Eigen::SparseMatrix<double> M = createMavecCL(choix, Nk);
 
   Eigen::VectorXd F = createFpourMavecCL(choix, Nk);
 
-  std::vector<double> Fk=createFK(getQ2PolVect());
+  // Eigen::SparseMatrix<double> M = createMsansCL(choix, Nk);
+  //
+  // Eigen::VectorXd F = createFbasique(choix, Nk);
 
-  insertSource(Fk,Nk,F);
-
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double> > solver;
+  Eigen::BiCGSTAB<Eigen::SparseMatrix<double> > solver;
 
   solver.compute(M);
 

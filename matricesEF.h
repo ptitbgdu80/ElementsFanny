@@ -28,6 +28,8 @@ std::vector<double> CLvitesse (double x, double y);
 
 double CLpression (double x, double y);
 
+Eigen::VectorXd createFbasique(int choix, int Nk);
+
 Eigen::VectorXd createFpourMavecCL(int choix, int Nk);
 
 void insertAsansCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
