@@ -766,20 +766,26 @@ int localToGlobalQ2(int elementK, int numeroSommet, int Nk) //Donne l'indice dan
   return 2*L*Nx + 2*C + (numeroSommet - 1)/3*Nx + (numeroSommet-1)%3;
 }
 
-void createVTK(std::string fichier, int choix, int Nk, Eigen::VectorXd U)
+void saveSol(std::string fichier, int choix, int Nk, Eigen::VectorXd U)
 {
   int Nx1, Nx2;
-
+  double dx1, dx2, decalage;
   switch (choix)
   {
     case 1:
     Nx1 = Nk+1;
     Nx2 = Nk;
+    dx1 = 1./Nk;
+    dx2 = 1./Nk;
+    decalage = dx2/2.;
     break;
 
     case 2:
     Nx1 = 2*Nk+1;
     Nx2 = Nk+1;
+    dx1 = 1./(2*Nk);
+    dx2 = 1./Nk;
+    decalage = 0;
     break;
 
     default:
@@ -788,45 +794,32 @@ void createVTK(std::string fichier, int choix, int Nk, Eigen::VectorXd U)
   }
 
   std::ofstream mon_fluxP;
-  mon_fluxP.open(fichier + "_p.vtk", std::ios::out);
-  mon_fluxP << "# vtk DataFile Version 3.0\n"
-  <<"cell\n"
-  <<"ASCII\n"
-  <<"DATASET STRUCTURED_POINTS\n"
-  <<"DIMENSIONS " << Nx2 << " " << Nx2 << " 1\n"
-  <<"ORIGIN 0 0 0\n"
-  <<"SPACING  1.0 1.0 1.0\n"
-  <<"POINT_DATA " << Nx2*Nx2 << "\n"
-  <<"SCALARS cell float\n"
-  <<"LOOKUP_TABLE default" << std::endl;
+  mon_fluxP.open(fichier + "_p.txt", std::ios::out);
+  mon_fluxP << "# champ de pressions sur un maillage carré" << std::endl;
 
   for (int i = 0; i < Nx2; i++)
   {
     for (int j = 0; j < Nx2; j++)
     {
-      mon_fluxP << U[2*Nx1*Nx1 + j + i*Nx2] << " ";
+      mon_fluxP << j*dx2+decalage << " " << i*dx2 + decalage << " " << U[2*Nx1*Nx1 + j + i*Nx2] << std::endl;
     }
-    mon_fluxP << std::endl;
   }
 
   mon_fluxP.close();
 
   std::ofstream mon_fluxU;
-  mon_fluxU.open(fichier + "_u.vtk", std::ios::out);
-  mon_fluxU << "# vtk DataFile Version 3.0\n"
-  <<"cell\n"
-  <<"ASCII\n"
-  <<"DATASET STRUCTURED_POINTS\n"
-  <<"DIMENSIONS " << Nx1 << " " << Nx1 << " 1\n"
-  <<"ORIGIN 0 0 0\n"
-  <<"SPACING  1.0 1.0 1.0\n"
-  <<"POINT_DATA " << Nx1*Nx1 << "\n"
-  <<"Vectors cell float\n"
-  <<"LOOKUP_TABLE default" << std::endl;
+  mon_fluxU.open(fichier + "_u.txt", std::ios::out);
+  mon_fluxU << "# champ de vitesses sur un maillage carré" << std::endl;
 
-  for (int i = 0; i < Nx1*Nx1; i++)
+  for (int i = 0; i < Nx1; i++)
   {
-      mon_fluxU << U[i] << " " << U[i + Nx1*Nx1] << std::endl;
+    for (int j = 0; j < Nx1; j++)
+    {
+      double u1 = U[j + i*Nx1];
+      double u2 = U[Nx1*Nx1 + j + i*Nx1];
+      double norme = sqrt(u1*u1 + u2*u2);
+      mon_fluxU << j*dx1 << " " << i*dx1 << " " << u1*dx2/norme << " " << u2*dx2/norme << " " << norme << std::endl;
+    }
   }
 
   mon_fluxU.close();

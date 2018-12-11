@@ -3,7 +3,7 @@
 int main()
 {
   int choix = 1;
-  int Nk = 20;
+  int Nk = 40;
 
   Eigen::SparseMatrix<double> M = createMavecCL(choix, Nk);
 
@@ -19,5 +19,5 @@ int main()
 
   Eigen::VectorXd U = solver.solve(F);
 
-  createVTK("resultat", choix, Nk, U);
+  saveSol("resultat", choix, Nk, U);
 }

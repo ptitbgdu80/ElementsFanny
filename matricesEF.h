@@ -48,4 +48,4 @@ int localToGlobalQ1(int elementK, int numeroSommet, int Nk);
 
 int localToGlobalQ2(int elementK, int numeroSommet, int Nk);
 
-void createVTK(std::string fichier, int choix, int Nk, Eigen::VectorXd U);
+void saveSol(std::string fichier, int choix, int Nk, Eigen::VectorXd U);
