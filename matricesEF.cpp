@@ -86,18 +86,37 @@ std::vector<std::vector<double> > createB2k(std::vector<Polynome2D> polVect1, st
   return result;
 }
 
-std::vector<double> createFK(std::vector<Polynome2D> polVect)
+std::vector<double> createF1K(int choixCL, std::vector<Polynome2D> polVect)
 {
   std::vector<double> result;
   result.resize(polVect.size());
-  for (int i = 0; i < polVect.size(); i++)
+
+  if(choixCL==2)
   {
-        result[i]= integraleSurUnCarreUnitaire(polVect[i]);
+    for (int i = 0; i < polVect.size(); i++)
+    {
+      result[i]= integraleSurUnCarreUnitaire(polVect[i]);
+    }
   }
   return result;
 }
 
-void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F) //Nk nombre d'éléments (ou de mailles) par ligne
+std::vector<double> createF2K(int choixCL, std::vector<Polynome2D> polVect)
+{
+  std::vector<double> result;
+  result.resize(polVect.size());
+
+  if(choixCL==2)
+  {
+    for (int i = 0; i < polVect.size(); i++)
+    {
+      result[i]= -integraleSurUnCarreUnitaire(polVect[i]);
+    }
+  }
+  return result;
+}
+
+void insertSource(std::vector<double> F1k, std::vector<double> F2k, int Nk, Eigen::VectorXd &F) //Nk nombre d'éléments (ou de mailles) par ligne
 {
   if (Nk < 1)
   {
@@ -105,7 +124,7 @@ void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F) //Nk nombr
     exit(1);
   }
 
-  int dim = Fk.size();
+  int dim = F1k.size();
 
   if (dim == 4) //cas (P0,Q1)
   {
@@ -115,8 +134,8 @@ void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F) //Nk nombr
     {
       for(int i = 0; i < dim; i++)
       {
-        F[localToGlobalQ1(elementK,i+1,Nk)]+=Fk[i];
-        F[localToGlobalQ1(elementK,i+1,Nk)+Nx1*Nx1]+=Fk[i];
+        F[localToGlobalQ1(elementK,i+1,Nk)]+=F1k[i];
+        F[localToGlobalQ1(elementK,i+1,Nk)+Nx1*Nx1]+=F2k[i];
       }
     }
   }
@@ -129,8 +148,8 @@ void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F) //Nk nombr
     {
       for(int i = 0; i < dim; i++)
       {
-        F[localToGlobalQ2(elementK,i+1,Nk)]+=Fk[i];
-        F[localToGlobalQ2(elementK,i+1,Nk)+Nx1*Nx1]+=Fk[i];
+        F[localToGlobalQ2(elementK,i+1,Nk)]+=F1k[i];
+        F[localToGlobalQ2(elementK,i+1,Nk)+Nx1*Nx1]+=F2k[i];
       }
     }
   }
@@ -162,7 +181,7 @@ Eigen::VectorXd createF(int choix, int choixCL, int Nk)
   int Nx1;
   int Nx2;
 
-  std::vector<double> Fk;
+  std::vector<double> F1k, F2k;
   Eigen::VectorXd F;
 
   switch (choix)
@@ -173,7 +192,11 @@ Eigen::VectorXd createF(int choix, int choixCL, int Nk)
     dx1 = 1./Nk;
     dx2 = 1./Nk;
 
-    Fk = createFK(getQ1PolVect());
+    if (choixCL != 1)
+    {
+      F1k = createF1K(choixCL, getQ1PolVect());
+      F2k = createF2K(choixCL, getQ1PolVect());
+    }
     break;
 
     case 2: //cas (Q1,Q2)
@@ -182,8 +205,11 @@ Eigen::VectorXd createF(int choix, int choixCL, int Nk)
     dx1 = 1./(2*Nk);
     dx2 = 1./Nk;
 
-    Fk = createFK(getQ2PolVect());
-
+    if (choixCL != 1)
+    {
+      F1k = createF1K(choixCL, getQ2PolVect());
+      F2k = createF2K(choixCL, getQ2PolVect());
+    }
     break;
 
     default:
@@ -199,7 +225,7 @@ Eigen::VectorXd createF(int choix, int choixCL, int Nk)
 
   if (choixCL != 1)
   {
-    insertSource(Fk, Nk, F);
+    insertSource(F1k, F2k, Nk, F);
   }
 
   for (int i=0; i<Nx1; i++) //vitesses de bord
@@ -583,7 +609,7 @@ void saveSol(std::string fichier, int choix, int Nk, Eigen::VectorXd U)
     {
       double u1 = U[j + i*Nx1];
       double u2 = U[Nx1*Nx1 + j + i*Nx1];
-      double coeff = dx2/normeMax;
+      double coeff = dx1/normeMax;
       mon_fluxU << j*dx1 << " " << i*dx1 << " " << u1*coeff << " " << u2*coeff << " " << norme[j + i*Nx1] << std::endl;
     }
   }

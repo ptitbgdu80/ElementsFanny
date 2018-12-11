@@ -3,13 +3,13 @@
 int main()
 {
   int choix = 1;
-  int choixCL = 1;
-  double epsilon = 0.1;
-  int Nk = 40;
+  int choixCL = 2;
+  double epsilon = 0.0001;
+  int Nk = 20;
 
-  Eigen::SparseMatrix<double> M = createMavecCL(choix, Nk, epsilon);
+  Eigen::SparseMatrix<double> M = createM(choix, Nk, epsilon);
 
-  Eigen::VectorXd F = createFpourMavecCL(choix, Nk);
+  Eigen::VectorXd F = createF(choix, choixCL, Nk);
 
   // Eigen::SparseMatrix<double> M = createMsansCL(choix, Nk);
   //

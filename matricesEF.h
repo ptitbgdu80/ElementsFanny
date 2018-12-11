@@ -20,9 +20,11 @@ std::vector<std::vector<double> > createB1K(std::vector<Polynome2D> polVect1, st
 
 std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2);
 
-std::vector<double> createFK(std::vector<Polynome2D> polVect);
+std::vector<double> createF1K(int choixCL, std::vector<Polynome2D> polVect);
 
-void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F);
+std::vector<double> createF2K(int choixCL, std::vector<Polynome2D> polVect);
+
+void insertSource(std::vector<double> F1k, std::vector<double> F2k, int Nk, Eigen::VectorXd &F);
 
 std::vector<double> CLvitesse (int choixCL, double x, double y);
 
