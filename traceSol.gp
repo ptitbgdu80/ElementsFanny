@@ -16,4 +16,4 @@ plot "resultat_p.txt" u 1:2:3 with image
 set palette rgbformulae 22,13,-31
 
 set output "resultat_u.pdf"
-plot "resultat_u.txt" u 1:2:3:4:5 with vectors head size 0.1,5,30 filled lc palette
+plot[-0.01:1.1][-0.01:1.1] "resultat_u.txt" u 1:2:3:4:5 with vectors head size 0.1,5,30 filled lc palette

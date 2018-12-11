@@ -136,371 +136,99 @@ void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F) //Nk nombr
   }
 }
 
-std::vector<double> CLvitesse (double x, double y)
+std::vector<double> CLvitesse (int choixCL, double x, double y)
 {
-  return {0,0};
-}
-
-double CLpression (double x, double y)
-{
-  return 1;
-}
-
-Eigen::VectorXd createFbasique(int choix, int Nk)
-{
-  double dx1, dx2;
-  int Nx1;
-  int Nx2;
-
-  std::vector<double> Fk;
-  Eigen::VectorXd F;
-
-  switch (choix)
+  std::vector<double> u;
+  switch (choixCL)
   {
-    case 1: //cas (P0,Q1)
-    Nx1 = Nk +1;
-    Nx2 = Nk;
-    dx1 = 1./Nk;
-    dx2 = 1./Nk;
-
-    Fk = createFK(getQ1PolVect());
-    F.resize(2*Nx1*Nx1+Nx2*Nx2);
-    for (int i = 0; i < 2*Nx1*Nx1+Nx2*Nx2; i++)
-    {
-      F[i] = 0.;
-    }
-
-    insertSource(Fk, Nk, F);
-    break;
-
-    case 2: //cas (Q1,Q2)
-    Nx1 = 2*Nk + 1;
-    Nx2 = Nk + 1;
-    dx1 = 1./(2*Nk);
-    dx2 = 1./Nk;
-
-    Fk = createFK(getQ2PolVect());
-    F.resize(2*Nx1*Nx1+Nx2*Nx2);
-    for (int i = 0; i < 2*Nx1*Nx1+Nx2*Nx2; i++)
-    {
-      F[i] = 0.;
-    }
-
-    insertSource(Fk, Nk, F);
-    break;
-
-    default:
-    std::cout << "Le choix ne correspond ni au cas (P0,Q1), ni au cas (Q1,Q2)" << std::endl;
-    exit(1);
-  }
-
-  return F;
-}
-
-Eigen::VectorXd createFpourMavecCL(int choix, int Nk)
-{
-  double dx1, dx2;
-  int Nx1;
-  int Nx2;
-
-  std::vector<double> Fk;
-  Eigen::VectorXd F;
-
-  switch (choix)
-  {
-    case 1: //cas (P0,Q1)
-    Nx1 = Nk +1;
-    Nx2 = Nk;
-    dx1 = 1./Nk;
-    dx2 = 1./Nk;
-
-    Fk = createFK(getQ1PolVect());
-    F.resize(2*Nx1*Nx1+Nx2*Nx2);
-    for (int i = 0; i < 2*Nx1*Nx1+Nx2*Nx2; i++)
-    {
-      F[i] = 0.;
-    }
-
-    insertSource(Fk, Nk, F);
-
-    for (int i=0; i<Nx1; i++) //vitesses de bord
-    {
-      //premiere ligne
-      std::vector<double> Ubord = CLvitesse(i*dx1,0);
-      F[i] = Ubord[0]; //u1
-      F[i+Nx1*Nx1] = Ubord[1]; //u2
-
-      //derniere ligne
-      Ubord = CLvitesse(i*dx1,1);
-      F[i+Nx1*(Nx1-1)] = Ubord[0]; //u1
-      F[i+Nx1*(Nx1-1)+Nx1*Nx1] = Ubord[1]; //u2
-
-      //première colonne
-      Ubord = CLvitesse(0,i*dx1);
-      F[i*Nx1] = Ubord[0]; //u1
-      F[i*Nx1+Nx1*Nx1] = Ubord[1]; //u2
-
-      //dernière colonne
-      Ubord = CLvitesse(1,i*dx1);
-      F[(i+1)*Nx1-1] = Ubord[0]; //u1
-      F[(i+1)*Nx1-1+Nx1*Nx1] = Ubord[1]; //u2
-    }
-
-    for (int i=0; i<Nx2; i++) //pression de bord
-    {
-      //premiere ligne
-      double Pbord = CLpression((i+0.5)*dx2,dx2/2.); //au centre de la maille
-      F[i+2*Nx1*Nx1] = Pbord;
-
-      //derniere ligne
-      Pbord = CLpression((i+0.5)*dx2,1-dx2/2.);
-      F[i+Nx2*(Nx2-1)+2*Nx1*Nx1] = Pbord;
-
-      //première colonne
-      Pbord = CLpression(dx2/2,(i+0.5)*dx2);
-      F[i*Nx2+2*Nx1*Nx1] = Pbord;
-
-      //dernière colonne
-      Pbord = CLpression(1-dx2/2.,(i+0.5)*dx2);
-      F[(i+1)*Nx2-1+2*Nx1*Nx1] = Pbord;
-    }
-    break;
-
-    case 2: //cas (Q1,Q2)
-    Nx1 = 2*Nk + 1;
-    Nx2 = Nk + 1;
-    dx1 = 1./(2*Nk);
-    dx2 = 1./Nk;
-
-    Fk = createFK(getQ2PolVect());
-    F.resize(2*Nx1*Nx1+Nx2*Nx2);
-
-    for (int i = 0; i < 2*Nx1*Nx1+Nx2*Nx2; i++)
-    {
-      F[i] = 0.;
-    }
-
-    insertSource(Fk, Nk, F);
-
-    for (int i=0; i<Nx1; i++) //vitesses de bord
-    {
-      //premiere ligne
-      std::vector<double> Ubord = CLvitesse(i*dx1,0);
-      F[i] = Ubord[0]; //u1
-      F[i+Nx1*Nx1] = Ubord[1]; //u2
-
-      //derniere ligne
-      Ubord = CLvitesse(i*dx1,1);
-      F[i+Nx1*(Nx1-1)] = Ubord[0]; //u1
-      F[i+Nx1*(Nx1-1)+Nx1*Nx1] = Ubord[1]; //u2
-
-      //première colonne
-      Ubord = CLvitesse(0,i*dx1);
-      F[i*Nx1] = Ubord[0]; //u1
-      F[i*Nx1+Nx1*Nx1] = Ubord[1]; //u2
-
-      //dernière colonne
-      Ubord = CLvitesse(1,i*dx1);
-      F[(i+1)*Nx1-1] = Ubord[0]; //u1
-      F[(i+1)*Nx1-1+Nx1*Nx1] = Ubord[1]; //u2
-    }
-
-    for (int i=0; i<Nx2; i++) //pression de bord
-    {
-      //premiere ligne
-      double Pbord = CLpression(i*dx2,0);
-      F[i+2*Nx1*Nx1] = Pbord;
-
-      //derniere ligne
-      Pbord = CLpression(i*dx2,1);
-      F[i+Nx2*(Nx2-1)+2*Nx1*Nx1] = Pbord;
-
-      //première colonne
-      Pbord = CLpression(0,i*dx2);
-      F[i*Nx2+2*Nx1*Nx1] = Pbord;
-
-      //dernière colonne
-      Pbord = CLpression(1,i*dx2);
-      F[(i+1)*Nx2-1+2*Nx1*Nx1] = Pbord;
-    }
-    break;
-
-    default:
-    std::cout << "Le choix ne correspond ni au cas (P0,Q1), ni au cas (Q1,Q2)" << std::endl;
-    exit(1);
-  }
-
-  return F;
-}
-
-void insertAsansCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M) //Nk nombre d'éléments (ou de mailles) par ligne
-{
-  if (Nk < 1)
-  {
-    std::cout << "Le nombre d'éléments par ligne doit être positif pour créer A" << std::endl;
-    exit(1);
-  }
-  int dim = Ak.size();
-
-  if (Ak[0].size() != dim)
-  {
-    std::cout << "La matrice Ak n'est pas carrée" << std::endl;
-    exit(1);
-  }
-
-  int Nx;
-
-  if (dim == 4) //cas Q1
-  {
-    Nx = Nk +1;
-  }
-  else if (dim == 9) //cas Q2
-  {
-    Nx = 2*Nk + 1;
-  }
-  else
-  {
-    std::cout << "La matrice Ak n'a pas une dimension correspondant à Q1 ou Q2" << std::endl;
-    exit(1);
-  }
-
-  if (dim == 4) //cas Q1
-  {
-    for (int elementK = 0; elementK < Nk*Nk; elementK++)
-    {
-      for(int i = 0; i < dim; i++)
-      {
-        for (int j = 0; j < dim; j++)
-        {
-          M.coeffRef(localToGlobalQ1(elementK,i+1,Nk),localToGlobalQ1(elementK,j+1,Nk))+=Ak[i][j];
-          M.coeffRef(localToGlobalQ1(elementK,i+1,Nk)+Nx*Nx,localToGlobalQ1(elementK,j+1,Nk)+Nx*Nx)+=Ak[i][j];
-        }
-      }
-    }
-  }
-
-  else if (dim == 9) //cas (Q1,Q2)
-  {
-    for (int elementK = 0; elementK < Nk*Nk; elementK++)
-    {
-      for(int i = 0; i < dim; i++)
-      {
-        for (int j = 0; j < dim; j++)
-        {
-          M.coeffRef(localToGlobalQ2(elementK,i+1,Nk),localToGlobalQ2(elementK,j+1,Nk))+=Ak[i][j];
-          M.coeffRef(localToGlobalQ2(elementK,i+1,Nk)+Nx*Nx,localToGlobalQ2(elementK,j+1,Nk)+Nx*Nx)+=Ak[i][j];
-        }
-      }
-    }
-  }
-}
-
-void insertB1B2sansCL(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M)
-{
-  if (Nk < 1)
-  {
-    std::cout << "Le nombre d'éléments par ligne doit être positif pour créer B1" << std::endl;
-    exit(1);
-  }
-
-  int dim1 = B1k.size();
-  int dim2 = B1k[0].size();
-
-  if (B2k.size() != dim1 or B2k[0].size() != dim2)
-  {
-    std::cout << "Les matrices B1k et B2k n'ont pas les mêmes dimensions" << std::endl;
-    exit(1);
-  }
-
-  int Nx1, Nx2;
-
-  if (dim1 == 4 and dim2 == 1) //cas (P0,Q1)
-  {
-    Nx1 = Nk +1;
-    Nx2 = Nk;
-  }
-  else if (dim1 == 9 and dim2 == 4) //cas (Q1,Q2)
-  {
-    Nx1 = 2*Nk + 1;
-    Nx2 = Nk + 1;
-  }
-  else
-  {
-    std::cout << "La matrice Bk n'a pas une dimension correspondant à (P0,Q1) ou (Q1,Q2)" << std::endl;
-    exit(1);
-  }
-
-
-  if (dim1 == 4 and dim2 ==1) //cas (P0,Q1)
-  {
-    for (int elementK = 0; elementK < Nk*Nk; elementK++)
-    {
-      for(int i = 0; i < dim1; i++)
-      {
-        for (int j = 0; j < dim2; j++)
-        {
-          M.coeffRef(localToGlobalQ1(elementK,i+1,Nk),elementK+2*Nx1*Nx1) += B1k[i][j];
-          M.coeffRef(elementK+2*Nx1*Nx1,localToGlobalQ1(elementK,i+1,Nk)) += B1k[i][j];
-          M.coeffRef(localToGlobalQ1(elementK,i+1,Nk)+Nx1*Nx1,elementK+2*Nx1*Nx1) += B2k[i][j];
-          M.coeffRef(elementK+2*Nx1*Nx1,localToGlobalQ1(elementK,i+1,Nk)+Nx1*Nx1) += B2k[i][j];
-        }
-      }
-    }
-  }
-
-  else if (dim1 == 9 and dim2 == 4) //cas Q2
-  {
-    for (int elementK = 0; elementK < Nk*Nk; elementK++)
-    {
-      for(int i = 0; i < dim1; i++)
-      {
-        for (int j = 0; j < dim2; j++)
-        {
-          M.coeffRef(localToGlobalQ2(elementK,i+1,Nk),localToGlobalQ1(elementK,j+1,Nk)+2*Nx1*Nx1) += B1k[i][j];
-          M.coeffRef(localToGlobalQ1(elementK,j+1,Nk)+2*Nx1*Nx1,localToGlobalQ2(elementK,i+1,Nk)) += B1k[i][j];
-          M.coeffRef(localToGlobalQ2(elementK,i+1,Nk)+Nx1*Nx1,localToGlobalQ1(elementK,j+1,Nk)+2*Nx1*Nx1) += B2k[i][j];
-          M.coeffRef(localToGlobalQ1(elementK,j+1,Nk)+2*Nx1*Nx1,localToGlobalQ2(elementK,i+1,Nk)+Nx1*Nx1) += B2k[i][j];
-        }
-      }
-    }
-  }
-}
-
-Eigen::SparseMatrix<double> createMsansCL(int choix, int Nk)
-{
-  int Nx1,Nx2;
-  std::vector<std::vector<double> > Ak, B1k, B2k;
-  Eigen::SparseMatrix<double> M;
-
-  switch (choix) {
     case 1:
-    Ak = createAk(getQ1PolVect());
-    B1k = createB1k(getP0PolVect(),getQ1PolVect());
-    B2k = createB2k(getP0PolVect(),getQ1PolVect());
-    Nx1=Nk+1;
-    Nx2=Nk;
+    u = {1,1};
     break;
+
     case 2:
-    Ak = createAk(getQ2PolVect());
-    B1k = createB1k(getQ1PolVect(),getQ2PolVect());
-    B2k = createB2k(getQ1PolVect(),getQ2PolVect());
-    Nx1=2*Nk+1;
-    Nx2=Nk+1;
+    u = {x,-y};
     break;
+
     default:
-    std::cout<<"Le choix doit être 1 ou 2"<<std::endl;
+    std::cout << "Le choix de CL ne correspond pas à un cas implémenté" << std::endl;
+    exit(1);
+  }
+  return u;
+}
+
+Eigen::VectorXd createF(int choix, int choixCL, int Nk)
+{
+  double dx1, dx2;
+  int Nx1;
+  int Nx2;
+
+  std::vector<double> Fk;
+  Eigen::VectorXd F;
+
+  switch (choix)
+  {
+    case 1: //cas (P0,Q1)
+    Nx1 = Nk +1;
+    Nx2 = Nk;
+    dx1 = 1./Nk;
+    dx2 = 1./Nk;
+
+    Fk = createFK(getQ1PolVect());
+    break;
+
+    case 2: //cas (Q1,Q2)
+    Nx1 = 2*Nk + 1;
+    Nx2 = Nk + 1;
+    dx1 = 1./(2*Nk);
+    dx2 = 1./Nk;
+
+    Fk = createFK(getQ2PolVect());
+
+    break;
+
+    default:
+    std::cout << "Le choix ne correspond ni au cas (P0,Q1), ni au cas (Q1,Q2)" << std::endl;
     exit(1);
   }
 
-  M.resize(2*(Nx1*Nx1)+Nx2*Nx2,2*(Nx1*Nx1)+Nx2*Nx2);
+  F.resize(2*Nx1*Nx1+Nx2*Nx2);
+  for (int i = 0; i < 2*Nx1*Nx1+Nx2*Nx2; i++)
+  {
+    F[i] = 0.;
+  }
 
-  insertAsansCL(Ak, Nk, M);
-  insertB1B2sansCL(B1k,B2k,Nk,M);
+  if (choixCL != 1)
+  {
+    insertSource(Fk, Nk, F);
+  }
 
-  return M;
+  for (int i=0; i<Nx1; i++) //vitesses de bord
+  {
+    //premiere ligne
+    std::vector<double> Ubord = CLvitesse(choixCL,i*dx1,0);
+    F[i] = Ubord[0]; //u1
+    F[i+Nx1*Nx1] = Ubord[1]; //u2
+
+    //derniere ligne
+    Ubord = CLvitesse(choixCL,i*dx1,1);
+    F[i+Nx1*(Nx1-1)] = Ubord[0]; //u1
+    F[i+Nx1*(Nx1-1)+Nx1*Nx1] = Ubord[1]; //u2
+
+    //première colonne
+    Ubord = CLvitesse(choixCL,0,i*dx1);
+    F[i*Nx1] = Ubord[0]; //u1
+    F[i*Nx1+Nx1*Nx1] = Ubord[1]; //u2
+
+    //dernière colonne
+    Ubord = CLvitesse(choixCL,1,i*dx1);
+    F[(i+1)*Nx1-1] = Ubord[0]; //u1
+    F[(i+1)*Nx1-1+Nx1*Nx1] = Ubord[1]; //u2
+  }
+
+  return F;
 }
 
-void insertAavecCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M) //Nk nombre d'éléments (ou de mailles) par ligne
+void insertA(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M) //Nk nombre d'éléments (ou de mailles) par ligne
 {
   if (Nk < 1)
   {
@@ -589,7 +317,7 @@ void insertAavecCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMa
   }
 }
 
-void insertB1B2avecCL(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M)
+void insertB1B2(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M)
 {
   if (Nk < 1)
   {
@@ -630,15 +358,8 @@ void insertB1B2avecCL(std::vector<std::vector<double> > B1k, std::vector<std::ve
             M.coeffRef(iB+Nx1*Nx1,jB+2*Nx1*Nx1) += B2k[i][j];
           }
 
-          if (jB >= Nx2 and jB%Nx2 != 0 and jB%Nx2 != Nx2-1 and jB < Nx2*(Nx2-1)) //remplissage des B^T
-          {
-            M.coeffRef(jB+2*Nx1*Nx1,iB) += B1k[i][j];
-            M.coeffRef(jB+2*Nx1*Nx1,iB+Nx1*Nx1) += B2k[i][j];
-          }
-          else
-          {
-            M.coeffRef(jB+2*Nx1*Nx1,jB+2*Nx1*Nx1) = 1;
-          }
+          M.coeffRef(jB+2*Nx1*Nx1,iB) += B1k[i][j];
+          M.coeffRef(jB+2*Nx1*Nx1,iB+Nx1*Nx1) += B2k[i][j];
         }
       }
     }
@@ -666,15 +387,8 @@ void insertB1B2avecCL(std::vector<std::vector<double> > B1k, std::vector<std::ve
             M.coeffRef(iB+Nx1*Nx1,jB+2*Nx1*Nx1) += B2k[i][j];
           }
 
-          if (jB >= Nx2 and jB%Nx2 != 0 and jB%Nx2 != Nx2-1 and jB < Nx2*(Nx2-1)) //remplissage des B^T
-          {
-            M.coeffRef(jB+2*Nx1*Nx1,iB) += B1k[i][j];
-            M.coeffRef(jB+2*Nx1*Nx1,iB+Nx1*Nx1) += B2k[i][j];
-          }
-          else
-          {
-            M.coeffRef(jB+2*Nx1*Nx1,jB+2*Nx1*Nx1) = 1;
-          }
+          M.coeffRef(jB+2*Nx1*Nx1,iB) += B1k[i][j];
+          M.coeffRef(jB+2*Nx1*Nx1,iB+Nx1*Nx1) += B2k[i][j];
         }
       }
     }
@@ -688,7 +402,7 @@ void insertB1B2avecCL(std::vector<std::vector<double> > B1k, std::vector<std::ve
 
 }
 
-Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk, double epsilon)
+Eigen::SparseMatrix<double> createM(int choix, int Nk, double epsilon)
 {
   int Nx1,Nx2;
   std::vector<std::vector<double> > Ak, B1k, B2k;
@@ -716,8 +430,8 @@ Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk, double epsilon)
 
   M.resize(2*(Nx1*Nx1)+Nx2*Nx2,2*(Nx1*Nx1)+Nx2*Nx2);
 
-  insertAavecCL(Ak, Nk, M);
-  insertB1B2avecCL(B1k,B2k,Nk,M);
+  insertA(Ak, Nk, M);
+  insertB1B2(B1k,B2k,Nk,M);
   insertEpsId(choix, epsilon, Nk, M);
 
   return M;
@@ -869,9 +583,8 @@ void saveSol(std::string fichier, int choix, int Nk, Eigen::VectorXd U)
     {
       double u1 = U[j + i*Nx1];
       double u2 = U[Nx1*Nx1 + j + i*Nx1];
-      double coeff = dx2*norme[j + i*Nx1]/normeMax;
-      std::cout << coeff << std::endl;
-      mon_fluxU << j*dx1 << " " << i*dx1 << " " << u1*coeff << " " << u2*coeff << " " << coeff << std::endl;
+      double coeff = dx2/normeMax;
+      mon_fluxU << j*dx1 << " " << i*dx1 << " " << u1*coeff << " " << u2*coeff << " " << norme[j + i*Nx1] << std::endl;
     }
   }
 

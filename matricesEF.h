@@ -24,25 +24,15 @@ std::vector<double> createFK(std::vector<Polynome2D> polVect);
 
 void insertSource(std::vector<double> Fk, int Nk, Eigen::VectorXd &F);
 
-std::vector<double> CLvitesse (double x, double y);
+std::vector<double> CLvitesse (int choixCL, double x, double y);
 
-double CLpression (double x, double y);
+Eigen::VectorXd createF(int choix, int choixCL, int Nk);
 
-Eigen::VectorXd createFbasique(int choix, int Nk);
+void insertA(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
 
-Eigen::VectorXd createFpourMavecCL(int choix, int Nk);
+void insertB1B2(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M);
 
-void insertAsansCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
-
-void insertB1B2sansCL(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M);
-
-Eigen::SparseMatrix<double> createMsansCL(int choix, int Nk);
-
-void insertAavecCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<double> &M);
-
-void insertB1B2avecCL(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M);
-
-Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk, double epsilon);
+Eigen::SparseMatrix<double> createM(int choix, int Nk, double epsilon);
 
 void insertEpsId(int choix, double epsilon, int Nk,Eigen::SparseMatrix<double> &M);
 
