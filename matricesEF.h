@@ -42,7 +42,9 @@ void insertAavecCL(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMa
 
 void insertB1B2avecCL(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M);
 
-Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk);
+Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk, double epsilon);
+
+void insertEpsId(int choix, double epsilon, int Nk,Eigen::SparseMatrix<double> &M);
 
 int localToGlobalQ1(int elementK, int numeroSommet, int Nk);
 

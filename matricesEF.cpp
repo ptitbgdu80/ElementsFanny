@@ -688,7 +688,7 @@ void insertB1B2avecCL(std::vector<std::vector<double> > B1k, std::vector<std::ve
 
 }
 
-Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk)
+Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk, double epsilon)
 {
   int Nx1,Nx2;
   std::vector<std::vector<double> > Ak, B1k, B2k;
@@ -718,8 +718,41 @@ Eigen::SparseMatrix<double> createMavecCL(int choix, int Nk)
 
   insertAavecCL(Ak, Nk, M);
   insertB1B2avecCL(B1k,B2k,Nk,M);
+  insertEpsId(choix, epsilon, Nk, M);
 
   return M;
+}
+
+void insertEpsId(int choix, double epsilon, int Nk,Eigen::SparseMatrix<double> &M)
+{
+  if (Nk < 1)
+  {
+    std::cout << "Le nombre d'éléments par ligne doit être positif pour créer Epsilon Id" << std::endl;
+    exit(1);
+  }
+
+  int Nx1, Nx2;
+
+  if (choix == 1) //cas (P0,Q1)
+  {
+    Nx1 = Nk +1;
+    Nx2 = Nk;
+  }
+  else if (choix == 2) //cas (Q1,Q2)
+  {
+    Nx1 = 2*Nk + 1;
+    Nx2 = Nk + 1;
+  }
+  else
+  {
+    std::cout << "La matrice Epsilon Id n'a pas une dimension correspondant à (P0,Q1) ou (Q1,Q2)" << std::endl;
+    exit(1);
+  }
+
+  for (int i=0; i<Nx2*Nx2; i++)
+  {
+    M.coeffRef(2*Nx1*Nx1+i,2*Nx1*Nx1+i)=epsilon;
+  }
 }
 
 int localToGlobalQ1(int elementK, int numeroSommet, int Nk) //Donne l'indice dans le maillage du sommet numeroSommet appartenant à l'élément elementK, Nk nombre d'éléments par ligne
@@ -811,14 +844,34 @@ void saveSol(std::string fichier, int choix, int Nk, Eigen::VectorXd U)
   mon_fluxU.open(fichier + "_u.txt", std::ios::out);
   mon_fluxU << "# champ de vitesses sur un maillage carré" << std::endl;
 
+  std::vector<double> norme;
+  norme.resize(Nx1*Nx1);
+
+  double normeMax = 0;
+
   for (int i = 0; i < Nx1; i++)
   {
     for (int j = 0; j < Nx1; j++)
     {
       double u1 = U[j + i*Nx1];
       double u2 = U[Nx1*Nx1 + j + i*Nx1];
-      double norme = sqrt(u1*u1 + u2*u2);
-      mon_fluxU << j*dx1 << " " << i*dx1 << " " << u1*dx2/norme << " " << u2*dx2/norme << " " << norme << std::endl;
+      norme[j + i*Nx1] = sqrt(u1*u1 + u2*u2);
+      if (norme[j+i*Nx1] > normeMax)
+      {
+        normeMax = norme[j + i*Nx1];
+      }
+    }
+  }
+
+  for (int i = 0; i < Nx1; i++)
+  {
+    for (int j = 0; j < Nx1; j++)
+    {
+      double u1 = U[j + i*Nx1];
+      double u2 = U[Nx1*Nx1 + j + i*Nx1];
+      double coeff = dx2*norme[j + i*Nx1]/normeMax;
+      std::cout << coeff << std::endl;
+      mon_fluxU << j*dx1 << " " << i*dx1 << " " << u1*coeff << " " << u2*coeff << " " << coeff << std::endl;
     }
   }
 
