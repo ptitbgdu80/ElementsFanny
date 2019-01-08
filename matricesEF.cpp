@@ -480,6 +480,8 @@ Eigen::SparseMatrix<double> createM(int choix, int Nk, double epsilon) //assembl
   std::vector<std::vector<double> > Ak, B1k, B2k;
   Eigen::SparseMatrix<double> M;
 
+  std::cout << "test" << std::endl;
+
   switch (choix) {
     case 1:
     Ak = createAk(getQ1PolVect());
@@ -500,11 +502,23 @@ Eigen::SparseMatrix<double> createM(int choix, int Nk, double epsilon) //assembl
     exit(1);
   }
 
+  std::cout << "test2" << std::endl;
+
   M.resize(2*(Nx1*Nx1)+Nx2*Nx2,2*(Nx1*Nx1)+Nx2*Nx2);
 
+  std::cout << "test3" << std::endl;
+
   insertA(Ak, Nk, M);
+
+  std::cout << "test4" << std::endl;
+
   insertB1B2(B1k,B2k,Nk,M);
+
+  std::cout << "test5" << std::endl;
+
   insertEpsId(choix, epsilon, Nk, M);
+
+  std::cout << "test6" << std::endl;
 
   return M;
 }
