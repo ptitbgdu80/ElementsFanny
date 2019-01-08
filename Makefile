@@ -2,7 +2,7 @@
 CC=g++
 
 # Les options de compilation
-FLAGS =-std=c++11 -I EigenLibrary/Eigen
+FLAGS =-std=c++11 -I EigenLibrary/Eigen -O2
 
 # Le nom de l'exécutable
 PROG = run

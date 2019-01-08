@@ -16,9 +16,9 @@ std::vector<Polynome2D> getQ2PolVect();
 
 std::vector<std::vector<double> > createAK(std::vector<Polynome2D> polVect);
 
-std::vector<std::vector<double> > createB1K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2);
+std::vector<std::vector<double> > createB1K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2, int Nk);
 
-std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2);
+std::vector<std::vector<double> > createB2K(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2, int Nk);
 
 std::vector<double> createF1K(int choixCL, std::vector<Polynome2D> polVect);
 

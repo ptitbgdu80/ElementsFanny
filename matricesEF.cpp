@@ -43,6 +43,8 @@ std::vector<Polynome2D> getQ2PolVect() //creation des fonctions de forme de Q1
 
 std::vector<std::vector<double> > createAk(std::vector<Polynome2D> polVect) // creation de la matrice Ak pour l'element K (en pratique toutes les memes)
 {
+  double nu = 1.31e-6;
+
   std::vector<std::vector<double> > result;
   result.resize(polVect.size());
   for (int i = 0; i < polVect.size(); i++)
@@ -50,13 +52,13 @@ std::vector<std::vector<double> > createAk(std::vector<Polynome2D> polVect) // c
     result[i].resize(polVect.size());
     for (int j = 0; j < polVect.size(); j++)
     {
-      result[i][j] = integraleSurUnCarreUnitaire(dotProduct(gradient(polVect[i]),gradient(polVect[j])));
+      result[i][j] = nu*integraleSurUnCarreUnitaire(dotProduct(gradient(polVect[i]),gradient(polVect[j])));
     }
   }
   return result;
 }
 
-std::vector<std::vector<double> > createB1k(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2) // creation de la matrice B1k pour l'element K (en pratique toutes les memes)
+std::vector<std::vector<double> > createB1k(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2, int Nk) // creation de la matrice B1k pour l'element K (en pratique toutes les memes)
 {
   std::vector<std::vector<double> > result;
   result.resize(polVect2.size());
@@ -65,13 +67,13 @@ std::vector<std::vector<double> > createB1k(std::vector<Polynome2D> polVect1, st
     result[i].resize(polVect1.size());
     for (int j = 0; j < polVect1.size(); j++)
     {
-      result[i][j] = - integraleSurUnCarreUnitaire(dx(polVect2[i])*polVect1[j]);
+      result[i][j] = - integraleSurUnCarreUnitaire(dx(polVect2[i])*polVect1[j])*Nk;
     }
   }
   return result;
 }
 
-std::vector<std::vector<double> > createB2k(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2)// creation de la matrice B2k pour l'element K (en pratique toutes les memes)
+std::vector<std::vector<double> > createB2k(std::vector<Polynome2D> polVect1, std::vector<Polynome2D> polVect2, int Nk)// creation de la matrice B2k pour l'element K (en pratique toutes les memes)
 {
   std::vector<std::vector<double> > result;
   result.resize(polVect2.size());
@@ -80,7 +82,7 @@ std::vector<std::vector<double> > createB2k(std::vector<Polynome2D> polVect1, st
     result[i].resize(polVect1.size());
     for (int j = 0; j < polVect1.size(); j++)
     {
-      result[i][j] = - integraleSurUnCarreUnitaire(dy(polVect2[i])*polVect1[j]);
+      result[i][j] = - integraleSurUnCarreUnitaire(dy(polVect2[i])*polVect1[j])*Nk;
     }
   }
   return result;
@@ -387,7 +389,7 @@ void insertA(std::vector<std::vector<double> > Ak, int Nk, Eigen::SparseMatrix<d
   }
 }
 
-void insertB1B2(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk,Eigen::SparseMatrix<double> &M) //remplissage de la matrice M avec les éléments de B1 et B2
+void insertB1B2(std::vector<std::vector<double> > B1k, std::vector<std::vector<double> > B2k, int Nk, Eigen::SparseMatrix<double> &M) //remplissage de la matrice M avec les éléments de B1 et B2
 {
   if (Nk < 1)
   {
@@ -481,15 +483,15 @@ Eigen::SparseMatrix<double> createM(int choix, int Nk, double epsilon) //assembl
   switch (choix) {
     case 1:
     Ak = createAk(getQ1PolVect());
-    B1k = createB1k(getP0PolVect(),getQ1PolVect());
-    B2k = createB2k(getP0PolVect(),getQ1PolVect());
+    B1k = createB1k(getP0PolVect(),getQ1PolVect(),Nk);
+    B2k = createB2k(getP0PolVect(),getQ1PolVect(),Nk);
     Nx1=Nk+1;
     Nx2=Nk;
     break;
     case 2:
     Ak = createAk(getQ2PolVect());
-    B1k = createB1k(getQ1PolVect(),getQ2PolVect());
-    B2k = createB2k(getQ1PolVect(),getQ2PolVect());
+    B1k = createB1k(getQ1PolVect(),getQ2PolVect(),Nk);
+    B2k = createB2k(getQ1PolVect(),getQ2PolVect(),Nk);
     Nx1=2*Nk+1;
     Nx2=Nk+1;
     break;
